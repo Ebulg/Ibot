@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=980" />
+  <title>Ibot — Ajustes</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    /* Estilos específicos de Config */
+    :root { --container-max: 980px; }
+
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      align-items: stretch;
+    }
+
+    /* Categorías */
+    .categories {
+      display: flex;
+      flex-direction: column;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      gap: 0;
+    }
+
+    .category-card {
+      display: flex;
+      flex-direction: row;
+      border-bottom: 2px solid var(--accent);
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .category-card:last-child { border-bottom: none; }
+
+    .category-left-col {
+      background: var(--accent);
+      color: #000;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      width: 40px;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .category-title-text {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .category-count {
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .category-rows-area {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tabla de grupos */
+    .groups-table {
+      width: 100%;
+      display: block;
+      border-radius: 0;
+      border: none;
+    }
+
+    .global-table-headers {
+      display: grid;
+      grid-template-columns: 40px 2fr 1fr 1fr 1fr 220px;
+      gap: 0;
+      align-items: center;
+      padding: 10px 12px;
+      column-gap: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      font-weight: 800;
+      color: var(--muted);
+      font-size: 13px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .group-row-table {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 220px;
+      gap: 0;
+      align-items: center;
+      padding: 10px 12px;
+      column-gap: 12px;
+      grid-auto-rows: minmax(48px, auto);
+      background: transparent;
+      transition: background var(--transition), box-shadow var(--transition);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .group-row-table:last-child { border-bottom: none; }
+
+    .group-row-table:hover {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.008), rgba(255, 255, 255, 0.01));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.01);
+    }
+
+    .add-row-bar {
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      transition: var(--transition);
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+      font-weight: 700;
+    }
+
+    .add-row-bar:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    /* Columnas */
+    .col-name { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+    .col-name .title {
+      font-weight: 800;
+      color: #fff;
+      transition: color var(--transition), text-shadow var(--transition);
+      font-size: 15px;
+    }
+
+    .col-meta { color: var(--muted); font-size: 12px; }
+
+    .group-row-table.active .col-name .title {
+      color: var(--success);
+      text-shadow:
+        0 0 8px rgba(46, 204, 113, 0.45),
+        0 0 18px rgba(46, 204, 113, 0.18),
+        0 4px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .group-row-table.active .col-meta { color: rgba(46, 204, 113, 0.65); }
+
+    .col-center { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .controls { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+
+    .btn.shortss {
+      background: var(--accent);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--bg);
+    }
+
+    .btn.shortss.active {
+      background: linear-gradient(90deg, rgba(46, 204, 113, 0.95), rgba(60, 220, 130, 0.95));
+      color: #00210b;
+      box-shadow: 0 6px 18px rgba(46, 204, 113, 0.12), 0 0 10px rgba(46, 204, 113, 0.12);
+    }
+
+    .groups-table,
+    .table-headers > div,
+    .group-row-table > div {
+      border-left: none;
+      border-right: none;
+    }
+
+    /* Modal */
+    #modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 80;
+      padding: 16px;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 600px;
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow: 0 14px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-title { font-weight: 900; margin-bottom: 6px; }
+    .modal-row { display: flex; gap: 8px; align-items: center; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+    /* Custom Select */
+    .select-wrapper { position: relative; min-width: 140px; }
+
+    .select-wrapper::after {
+      content: '▼';
+      font-size: 10px;
+      color: var(--accent);
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .custom-select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.6rem 2.2rem 0.6rem 1rem;
+      font-family: inherit;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .custom-select:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 15px rgba(3, 218, 198, 0.15);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    }
+
+    .custom-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(3, 218, 198, 0.2);
+    }
+
+    .custom-select option { background-color: var(--panel); color: #fff; padding: 10px; }
+
+    aside .panel { margin-top: 12px; padding: 12px; }
+    .help { font-size: 13px; color: var(--muted); }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .global-table-headers { display: none; }
+      .category-card {
+        flex-direction: column;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 10px;
+        border-radius: 8px;
+      }
+      .category-left-col {
+        width: 100%;
+        flex-direction: row;
+        height: auto;
+        padding: 6px 12px;
+        justify-content: space-between;
+      }
+      .category-title-text { writing-mode: horizontal-tb; transform: none; }
+      .table-headers, .group-row-table {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .controls { justify-content: flex-start; }
+      .groups-table { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">IB</div>
+        <div>
+          <div style="font-weight: 800">Ibot</div>
+          <div style="font-size: 12px; color: var(--muted)">Ajustes de grupos</div>
+        </div>
+      </div>
+      <nav class="top-links">
+        <a href="/">🏠 Home</a>
+        <a href="/config.html" class="active">⚙️ Ajustes</a>
+        <a href="/logs.html">📜 Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- Modo del Bot -->
+      <div class="panel" style="margin-bottom: var(--gap)">
+        <div class="header-row">
+          <div class="title">Modo del Bot</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <label class="small" style="font-size: 14px; color: var(--muted); font-weight: 600">Modo actual:</label>
+          <div class="select-wrapper">
+            <select id="bot-mode-select" class="custom-select">
+              <option value="normal">Normal</option>
+              <option value="flash">Flash</option>
+              <option value="watch">Watch</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grupos -->
+      <div class="panel">
+        <div class="header-row">
+          <div class="title">Grupos configurables</div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button id="btn-new" class="btn">➕ Nuevo grupo</button>
+            <button id="btn-refresh" class="btn util">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <div id="categories" class="categories"></div>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <div style="font-weight: 900; margin-bottom: 8px">Ayuda rápida</div>
+              <div class="help">
+                - <strong>Tipo de mensaje</strong>: texto | imagen | ambas.<br>
+                - <strong>Responder</strong>: habilita respuestas automáticas.<br>
+                - <strong>Respuesta</strong>: mensaje que enviará el bot.<br>
+                - <strong>Duración</strong>: efímero en segundos (0 = desactivado, 86400 = 24h, 604800 = 7d, 7776000 = 90d).<br>
+                - <strong>Grupo independiente</strong>: Se desactiva al superar el límite.<br>
+                - <strong>Límite de mensajes</strong>: Cantidad de mensajes a responder.<br><br>
+                - <strong>Botón Independientes</strong>: Activa/Desactiva los grupos independientes.<br>
+                - <strong>Respuestas</strong>: Habilita respuestas de los grupos no independientes.<br><br>
+                <div class="small muted">
+                  <strong>Recuerda</strong>: Los grupos independientes no dependen del botón de respuestas globales.
+                  Si el botón respuestas está desactivado, los grupos independientes seguirán respondiendo
+                  a menos que los desactives manualmente.
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <div class="modal-title" id="modalTitle">Nuevo grupo</div>
+        <div><button id="modalClose" class="btn danger">Cerrar</button></div>
+      </div>
+
+      <form id="form" style="margin-top: 8px">
+        <input type="hidden" id="field-groupId">
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap">
+          <div style="flex: 1; min-width: 220px">
+            <label class="small">GroupId (ej: 120363...@g.us)</label>
+            <input id="field-groupId-input" type="text" placeholder="120363....@g.us">
+          </div>
+          <div style="flex: 1; min-width: 180px">
+            <label class="small">Nombre</label>
+            <input id="field-nombre" type="text" placeholder="Nombre descriptivo">
+          </div>
+          <div style="flex: 1; min-width: 140px">
+            <label class="small">Categoría</label>
+            <input id="field-grupo" type="text" placeholder="Dueño / categoría">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap">
+          <div style="flex: 1; min-width: 160px">
+            <label class="small">Tipo de mensaje</label>
+            <select id="field-tipo">
+              <option value="texto">Texto</option>
+              <option value="imagen">Imagen</option>
+              <option value="ambas">Ambas</option>
+            </select>
+          </div>
+          <div style="width: 140px">
+            <label class="small">Responder</label>
+            <select id="field-responder">
+              <option value="1">Sí</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 160px">
+            <label class="small">Duración</label>
+            <select id="field-duracion">
+              <option value="0">Desactivado</option>
+              <option value="86400">24 horas</option>
+              <option value="604800">7 días</option>
+              <option value="7776000">90 días</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 10px">
+          <label class="small">Respuesta</label>
+          <textarea id="field-respuesta" placeholder="Texto que enviará el bot"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel" class="btn danger">Cancelar</button>
+          <button type="submit" id="btn-save" class="btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script>
+    // ─── Elementos del DOM ────────────────────────────────
+    const categoriesEl = $('#categories');
+    const modal = $('#modal');
+    const modalTitle = $('#modalTitle');
+    const modalClose = $('#modalClose');
+    const btnNew = $('#btn-new');
+    const btnRefresh = $('#btn-refresh');
+    const form = $('#form');
+    const btnCancel = $('#btn-cancel');
+    const fieldGroupId = $('#field-groupId');
+    const fieldGroupIdInput = $('#field-groupId-input');
+    const fieldNombre = $('#field-nombre');
+    const fieldGrupo = $('#field-grupo');
+    const fieldTipo = $('#field-tipo');
+    const fieldResponder = $('#field-responder');
+    const fieldDuracion = $('#field-duracion');
+    const fieldRespuesta = $('#field-respuesta');
+
+    let groups = [];
+
+    // ─── Campos extras del modal ──────────────────────────
+    function initModalExtras() {
+      if (document.getElementById('field-independiente')) return;
+
+      const modalCard = document.querySelector('.modal-card form');
+      if (!modalCard) return;
+
+      const wrapper = create('div', { style: 'display:flex;gap:12px;margin-top:10px;align-items:center;flex-wrap:wrap' });
+
+      const divChk = create('div', { style: 'min-width:160px' });
+      const lblChk = create('label', { className: 'small', innerText: 'Grupo independiente' });
+      const chk = create('input', { type: 'checkbox', id: 'field-independiente', style: 'margin-left:8px' });
+      lblChk.appendChild(chk);
+      divChk.appendChild(lblChk);
+
+      const divLim = create('div', { style: 'min-width:160px' });
+      const lblLim = create('label', { className: 'small', innerText: 'Límite de mensajes (ej: 3) — vacío = infinito' });
+      const inpLim = create('input', { type: 'number', id: 'field-limite', placeholder: '3', style: 'width:100%' });
+      divLim.appendChild(lblLim);
+      divLim.appendChild(inpLim);
+
+      wrapper.appendChild(divChk);
+      wrapper.appendChild(divLim);
+
+      const modalActions = document.querySelector('.modal-actions');
+      modalActions.parentNode.insertBefore(wrapper, modalActions);
+    }
+
+    // ─── Header Toggles ───────────────────────────────────
+    async function initHeaderToggles() {
+      const headerRow = document.querySelector('.header-row > div[style*="display:flex"]') || document.querySelector('.header-row div:last-child');
+      if (!headerRow || document.getElementById('btn-toggle-nonind')) return;
+
+      const btnNonInd = create('button', { className: 'btn util', id: 'btn-toggle-nonind', innerText: 'No-Independent', type: 'button' });
+      const btnInd = create('button', { className: 'btn util', id: 'btn-toggle-ind', innerText: 'Independientes', type: 'button' });
+
+      const initialState = await fetchRespCurrentState();
+      updateRespButtonAppearance(btnNonInd, initialState);
+
+      btnNonInd.addEventListener('click', async () => {
+        if (btnNonInd.disabled) return;
+        btnNonInd.disabled = true;
+
+        const currentlyOn = btnNonInd.classList.contains('resp-on') || btnNonInd.getAttribute('aria-pressed') === 'true';
+        updateRespButtonAppearance(btnNonInd, !currentlyOn);
+
+        try {
+          const res = await fetch('/toggle-respuesta', { method: 'POST' });
+          if (!res.ok) {
+            updateRespButtonAppearance(btnNonInd, currentlyOn);
+            throw new Error('toggle-respuesta failed');
+          }
+
+          let data = null;
+          try { data = await res.json(); } catch (e) { data = null; }
+
+          let newState = null;
+          if (data !== null) {
+            if (typeof data === 'boolean') newState = data;
+            else newState = data?.permiso ?? data?.respuestas ?? data?.state ?? data?.on ?? data?.enabled ?? data?.activo ?? data?.ok ?? null;
+          }
+
+          if (newState === null) {
+            newState = await fetchRespCurrentState();
+          } else {
+            newState = !!newState;
+          }
+
+          updateRespButtonAppearance(btnNonInd, newState);
+          await loadGroups();
+        } catch (err) {
+          console.error('Error en /toggle-respuesta:', err);
+          alert('Error toggling respuestas');
+        } finally {
+          btnNonInd.disabled = false;
+        }
+      });
+
+      btnInd.addEventListener('click', async () => {
+        btnInd.disabled = true;
+        try {
+          await toggleIndependentGroups();
+        } catch (err) {
+          console.error('toggleIndependentGroups error:', err);
+          alert('Error toggling grupos independientes');
+        } finally {
+          btnInd.disabled = false;
+        }
+      });
+
+      headerRow.insertBefore(btnInd, headerRow.children[headerRow.children.length - 2] || null);
+      headerRow.insertBefore(btnNonInd, headerRow.children[headerRow.children.length - 2] || null);
+    }
+
+    function updateRespButtonAppearance(btn, isOn) {
+      btn.classList.remove('resp-on', 'resp-off');
+      if (isOn) {
+        btn.classList.add('resp-on');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.innerText = 'Respuestas: ON';
+      } else {
+        btn.classList.add('resp-off');
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerText = 'Respuestas: OFF';
+      }
+    }
+
+    // ─── Estado actual de respuestas ──────────────────────
+    async function fetchRespCurrentState() {
+      try {
+        const res = await fetch('/toggle-cargar');
+        if (!res.ok) throw new Error('toggle-cargar failed');
+
+        let data = null;
+        try { data = await res.json(); } catch (e) { data = null; }
+
+        if (typeof data === 'boolean') return data;
+        if (data === null) return false;
+
+        const candidate = data?.permiso ?? data?.respuestas ?? data?.state ?? data?.on ?? data?.enabled ?? data?.activo ?? data?.ok ?? null;
+        if (typeof candidate === 'boolean') return candidate;
+
+        if (data && typeof data === 'object') {
+          for (const k in data) {
+            if (typeof data[k] === 'boolean') return data[k];
+          }
+        }
+      } catch (err) {
+        console.warn('fetchRespCurrentState error:', err);
+      }
+      return false;
+    }
+
+    // ─── Cargar grupos ────────────────────────────────────
+    async function loadGroups() {
+      try {
+        const configRef = '6845a8c734160e0e48e49362';
+        const res = await fetch(`/api/grupos?configRef=${configRef}`);
+        if (!res.ok) throw new Error('Error cargando');
+
+        const data = await res.json();
+        let arr = [];
+
+        if (Array.isArray(data)) {
+          arr = data.map((item) => Object.assign({
+            groupId: item.groupId,
+            nombre: item.nombre || '',
+            grupo: item.grupo || '',
+            responder: item.responder ?? false,
+            tipoMensaje: item.tipoMensaje || 'texto',
+            respuesta: item.respuesta?.text || (typeof item.respuesta === 'string' ? item.respuesta : ''),
+            duracion: item.duracion || 0,
+          }, item));
+        }
+
+        groups = arr;
+        renderGroups();
+      } catch (err) {
+        console.error('loadGroups error:', err);
+        categoriesEl.innerHTML = '<div style="color:var(--muted)">No se pudieron cargar los grupos</div>';
+      }
+    }
+
+    // ─── Renderizar grupos ────────────────────────────────
+    function renderGroups() {
+      categoriesEl.innerHTML = '';
+
+      const map = new Map();
+      for (const g of groups) {
+        const cat = g.grupo || 'otros';
+        if (!map.has(cat)) map.set(cat, []);
+        map.get(cat).push(g);
+      }
+
+      // Header global
+      const globalHeader = create('div', { className: 'global-table-headers' });
+      globalHeader.innerHTML = `
+        <div></div>
+        <div style="text-align:left">Nombre</div>
+        <div style="text-align:center">Tipo</div>
+        <div style="text-align:center">Contador</div>
+        <div style="text-align:center">Responder</div>
+        <div style="text-align:right">Acciones</div>
+      `;
+      categoriesEl.appendChild(globalHeader);
+      categoriesEl.className = 'categories';
+
+      for (const [cat, arr] of map.entries()) {
+        const catCard = create('div', { className: 'category-card' });
+
+        // Columna izquierda
+        const leftCol = create('div', { className: 'category-left-col' });
+        leftCol.appendChild(create('div', { className: 'category-title-text', textContent: cat }));
+        leftCol.appendChild(create('div', { className: 'category-count', textContent: arr.length }));
+
+        // Área de filas
+        const rightArea = create('div', { className: 'category-rows-area' });
+
+        for (const g of arr) {
+          const row = create('div', { className: 'group-row-table' + (g.responder ? ' active' : '') });
+
+          // Nombre
+          const nameCol = create('div', { className: 'col-name' });
+          nameCol.appendChild(create('div', { className: 'title', textContent: g.nombre || 'Sin nombre' }));
+          nameCol.appendChild(create('div', { className: 'col-meta', innerText: g.groupId }));
+
+          // Tipo
+          const tipoCol = create('div', { className: 'col-center', innerText: g.tipoMensaje || 'texto' });
+
+          // Contador
+          const cntCol = create('div', { className: 'col-center' });
+          if (g.independiente) {
+            const limite = parseInt(g.limite) || 0;
+            const contador = parseInt(g.contador) || 0;
+            cntCol.appendChild(create('div', {
+              innerText: `${contador}/${limite || '∞'}`,
+              className: limite ? '' : 'muted small',
+            }));
+          } else {
+            cntCol.appendChild(create('div', {
+              className: g.responder ? 'badge-on' : 'badge-off',
+              innerText: g.responder ? 'Global ON' : 'Global OFF',
+            }));
+          }
+
+          // Responder
+          const respCol = create('div', { className: 'col-center' });
+          const btnToggleResp = create('button', {
+            className: 'btn shortss' + (g.responder ? ' active' : '') + (g.independiente ? ' ind' : ''),
+            innerText: g.responder ? 'Desactivar' : 'Activar',
+            type: 'button',
+          });
+          btnToggleResp.setAttribute('aria-pressed', g.responder ? 'true' : 'false');
+          btnToggleResp.addEventListener('click', () => toggleResponder(g.groupId, !!g.responder));
+          respCol.appendChild(btnToggleResp);
+
+          // Acciones
+          const actionsCol = create('div', { className: 'controls' });
+
+          const btnEdit = create('button', { className: 'btn util', innerText: 'Editar' });
+          btnEdit.addEventListener('click', () => openEdit(g));
+          actionsCol.appendChild(btnEdit);
+
+          if (g.independiente) {
+            const resetBtn = create('button', { className: 'btn util', innerText: 'Reiniciar' });
+            resetBtn.addEventListener('click', () => resetGroupCounter(g.groupId));
+            actionsCol.appendChild(resetBtn);
+          }
+
+          const btnDel = create('button', { className: 'btn danger', innerText: 'Borrar' });
+          btnDel.addEventListener('click', () => deleteGroupConfirm(g.groupId));
+          actionsCol.appendChild(btnDel);
+
+          row.appendChild(nameCol);
+          row.appendChild(tipoCol);
+          row.appendChild(cntCol);
+          row.appendChild(respCol);
+          row.appendChild(actionsCol);
+          rightArea.appendChild(row);
+        }
+
+        // Botón añadir
+        const addBtn = create('div', { className: 'add-row-bar', innerText: `+ Añadir a ${cat}` });
+        addBtn.addEventListener('click', () => openNewForCategory(cat));
+        rightArea.appendChild(addBtn);
+
+        catCard.appendChild(leftCol);
+        catCard.appendChild(rightArea);
+        categoriesEl.appendChild(catCard);
+      }
+    }
+
+    // ─── Funciones de modal ───────────────────────────────
+    function openNewForCategory(cat = 'otros') {
+      fieldGroupId.value = '';
+      fieldGroupIdInput.value = '';
+      fieldGroupIdInput.disabled = false;
+      fieldNombre.value = '';
+      fieldGrupo.value = cat;
+      fieldTipo.value = 'texto';
+      fieldResponder.value = '1';
+      fieldDuracion.value = '0';
+      fieldRespuesta.value = '';
+
+      const fi = document.getElementById('field-independiente');
+      const fl = document.getElementById('field-limite');
+      if (fi) fi.checked = false;
+      if (fl) fl.value = '';
+
+      modalTitle.innerText = 'Crear nuevo grupo';
+      modal.style.display = 'flex';
+    }
+
+    function openEdit(g) {
+      fieldGroupId.value = g.groupId;
+      fieldGroupIdInput.value = g.groupId;
+      fieldGroupIdInput.disabled = true;
+      fieldNombre.value = g.nombre || '';
+      fieldGrupo.value = g.grupo || '';
+      fieldTipo.value = g.tipoMensaje || 'texto';
+      fieldResponder.value = (g.responder === true || g.responder === 'true' || g.responder === 1) ? '1' : '0';
+
+      let dur = 0;
+      if (g.duracion && typeof g.duracion === 'object' && g.duracion.$numberInt) dur = Number(g.duracion.$numberInt);
+      else if (typeof g.duracion === 'number') dur = g.duracion;
+      else if (typeof g.duracion === 'string' && !isNaN(Number(g.duracion))) dur = Number(g.duracion);
+      fieldDuracion.value = String(dur);
+
+      const respuestaText = g.respuesta?.text || (typeof g.respuesta === 'string' ? g.respuesta : '');
+      fieldRespuesta.value = respuestaText;
+
+      const fi = document.getElementById('field-independiente');
+      const fl = document.getElementById('field-limite');
+      if (fi) fi.checked = !!g.independiente;
+      if (fl) fl.value = (g.limite !== undefined && g.limite !== null) ? String(g.limite) : '';
+
+      modalTitle.innerText = 'Editar grupo';
+      modal.style.display = 'flex';
+    }
+
+    // ─── Acciones CRUD ────────────────────────────────────
+    async function deleteGroupConfirm(groupId) {
+      if (!confirm('¿Borrar este grupo?')) return;
+      try {
+        const res = await fetch('/api/grupos/' + encodeURIComponent(groupId), { method: 'DELETE' });
+        if (!res.ok) throw new Error('error');
+        await loadGroups();
+      } catch (err) {
+        console.error(err);
+        alert('Error borrando grupo');
+      }
+    }
+
+    async function resetGroupCounter(groupId) {
+      try {
+        const res = await fetch(`/api/grupos/${encodeURIComponent(groupId)}/reset-contador`, { method: 'POST' });
+        if (!res.ok) throw new Error('error');
+        await loadGroups();
+      } catch (err) {
+        console.error(err);
+        alert('Error reiniciando contador');
+      }
+    }
+
+    async function toggleResponder(groupId, currentState) {
+      const idx = groups.findIndex((g) => g.groupId === groupId);
+      if (idx === -1) return;
+
+      const prevState = !!groups[idx].responder;
+      const newState = !prevState;
+
+      // Optimistic update
+      groups[idx].responder = newState;
+      renderGroups();
+
+      try {
+        const res = await fetch('/api/grupos/' + encodeURIComponent(groupId), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ responder: newState }),
+        });
+
+        if (!res.ok) {
+          groups[idx].responder = prevState;
+          renderGroups();
+          throw new Error('error toggle');
+        }
+
+        if (newState && groups[idx].independiente) {
+          await fetch(`/api/grupos/${encodeURIComponent(groupId)}/reset-contador`, { method: 'POST' }).catch(() => null);
+          const gi = groups.find((x) => x.groupId === groupId);
+          if (gi) gi.contador = 0;
+          renderGroups();
+        }
+      } catch (err) {
+        console.error('toggleResponder error:', err);
+        alert('Error cambiando estado de respuestas');
+      }
+    }
+
+    async function toggleIndependentGroups() {
+      try {
+        const res = await fetch('/api/grupos/toggle_independent', { method: 'POST' });
+        if (!res.ok) throw new Error('error');
+        await loadGroups();
+      } catch (err) {
+        console.error(err);
+        alert('Error toggling independent groups');
+      }
+    }
+
+    // ─── Form submit ──────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btnSave = $('#btn-save');
+      const groupIdVal = fieldGroupId.value || fieldGroupIdInput.value.trim();
+      const nombreVal = fieldNombre.value.trim() || 'Sin nombre';
+
+      const independienteEl = document.getElementById('field-independiente');
+      const limiteEl = document.getElementById('field-limite');
+
+      const payload = {
+        nombre: nombreVal,
+        tipoMensaje: fieldTipo.value,
+        responder: fieldResponder.value === '1',
+        respuesta: { text: fieldRespuesta.value || '' },
+        duracion: Number(fieldDuracion.value) || 0,
+        grupo: fieldGrupo.value.trim() || 'otros',
+        independiente: independienteEl ? !!independienteEl.checked : false,
+        limite: limiteEl ? (limiteEl.value === '' ? null : Number(limiteEl.value)) : null,
+      };
+
+      const prevBtnText = btnSave.innerText;
+      btnSave.disabled = true;
+      btnSave.innerText = 'Guardando...';
+
+      try {
+        let res;
+
+        if (groupIdVal) {
+          res = await fetch('/api/grupos/' + encodeURIComponent(groupIdVal), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          if (res.status === 404) {
+            const createBody = Object.assign({ groupId: fieldGroupIdInput.value.trim() || groupIdVal }, payload);
+            if (!createBody.groupId) { alert('El groupId es obligatorio'); return; }
+
+            const postRes = await fetch('/api/grupos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(createBody),
+            });
+
+            if (!postRes.ok) {
+              const text = await postRes.text().catch(() => null);
+              let body; try { body = text ? JSON.parse(text) : null; } catch (err) { body = { message: text }; }
+              alert('Error creando el grupo: ' + (body?.error || body?.message || postRes.statusText));
+              return;
+            }
+
+            alert('Nuevo grupo creado');
+            modal.style.display = 'none';
+            await loadGroups();
+            return;
+          }
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => null);
+            let body; try { body = text ? JSON.parse(text) : null; } catch (err) { body = { message: text }; }
+            alert('Error actualizando el grupo: ' + (body?.error || body?.message || res.statusText));
+            return;
+          }
+
+          alert(`Grupo ${nombreVal} actualizado`);
+          modal.style.display = 'none';
+          await loadGroups();
+        } else {
+          const createBody = Object.assign({ groupId: fieldGroupIdInput.value.trim() }, payload);
+          if (!createBody.groupId) { alert('El groupId es obligatorio'); return; }
+
+          res = await fetch('/api/grupos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(createBody),
+          });
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => null);
+            let body; try { body = text ? JSON.parse(text) : null; } catch (err) { body = { message: text }; }
+            alert('Error creando el grupo: ' + (body?.error || body?.message || res.statusText));
+            return;
+          }
+
+          alert('Nuevo grupo creado');
+          modal.style.display = 'none';
+          await loadGroups();
+        }
+      } catch (err) {
+        console.error('saveForm error:', err);
+        alert('Error guardando el grupo: ' + (err.message || err));
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerText = prevBtnText;
+      }
+    });
+
+    // ─── Modo del bot ─────────────────────────────────────
+    async function initBotMode() {
+      const select = document.getElementById('bot-mode-select');
+      if (!select) return;
+
+      try {
+        const res = await fetch('/toggle-cargar');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.modo) select.value = data.modo;
+        }
+      } catch (e) { console.error(e); }
+
+      select.addEventListener('change', async () => {
+        try {
+          const res = await fetch('/toggle-mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: select.value }),
+          });
+          if (!res.ok) alert('Error guardando modo');
+        } catch (e) {
+          console.error(e);
+          alert('Error guardando modo');
+        }
+      });
+    }
+
+    // ─── Event listeners ──────────────────────────────────
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    modalClose.addEventListener('click', () => modal.style.display = 'none');
+    btnNew.addEventListener('click', () => openNewForCategory('otros'));
+    btnRefresh.addEventListener('click', () => loadGroups());
+    btnCancel.addEventListener('click', (e) => { e.preventDefault(); modal.style.display = 'none'; });
+
+    // ─── Inicializar ──────────────────────────────────────
+    function loadPage() {
+      initModalExtras();
+      initHeaderToggles();
+      initBotMode();
+      loadGroups();
+    }
+
+    loadPage();
+  </script>
+</body>
+</html>

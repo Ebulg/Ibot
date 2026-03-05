@@ -1,0 +1,270 @@
+/* public/css/styles.css — Estilos compartidos entre todas las páginas */
+
+/* ─── Variables globales ─────────────────────────────── */
+:root {
+  --bg: #121212;
+  --panel: #1f1f1f;
+  --accent: #03dac6;
+  --bg-btn: #326ea7e5;
+  --muted: #bdbdbd;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --glass: rgba(255, 255, 255, 0.03);
+  --card-radius: 12px;
+  --gap: 14px;
+  --container-max: 1100px;
+  --transition: 200ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  --resp-btn-start: #9466ff;
+  --resp-btn-end: #7847ff;
+  color-scheme: dark;
+}
+
+/* ─── Reset ──────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family:
+    "Segoe UI",
+    Roboto,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: var(--bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Header / Navegación ────────────────────────────── */
+header.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--panel);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+}
+
+.top-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), #66fff0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: 800;
+}
+
+nav.top-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+nav.top-links a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+nav.top-links a.active,
+nav.top-links a:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+/* ─── Layout ─────────────────────────────────────────── */
+main {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.container {
+  max-width: var(--container-max);
+  width: 100%;
+  padding: 12px;
+}
+
+.panel {
+  background: var(--panel);
+  border-radius: var(--card-radius);
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+footer {
+  padding: 12px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ─── Botones ────────────────────────────────────────── */
+.btn {
+  background: var(--accent);
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  color: #000;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.btn.secondary {
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 20px rgba(255, 176, 68, 0.08);
+}
+
+.btn.util {
+  background: var(--bg-btn);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--bg);
+}
+
+.btn.danger {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+.btn.full {
+  width: 100%;
+}
+
+.btn.resp-on {
+  background: rgba(46, 204, 113, 0.12);
+  color: var(--success);
+  border: 2px solid rgba(46, 204, 112, 0.5);
+}
+
+.btn.resp-off {
+  background: rgba(231, 76, 60, 0.12) !important;
+  color: var(--danger) !important;
+  border: 2px solid rgba(231, 76, 60, 0.2);
+}
+
+/* ─── Pills / Badges ────────────────────────────────── */
+.pill {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pill.off {
+  background: rgba(231, 76, 60, 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(231, 76, 60, 0.12);
+}
+
+.pill.on {
+  background: rgba(46, 204, 113, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(46, 204, 113, 0.12);
+}
+
+.badge-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(46, 204, 113, 0.12);
+  color: var(--success);
+  font-weight: 800;
+  border: 1px solid rgba(46, 204, 113, 0.12);
+}
+
+.badge-off {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(231, 76, 60, 0.06);
+  color: var(--danger);
+  font-weight: 800;
+  border: 1px solid rgba(231, 76, 60, 0.1);
+}
+
+/* ─── Utilidades ─────────────────────────────────────── */
+.small {
+  font-size: 13px;
+  color: var(--muted);
+}
+.muted {
+  color: var(--muted);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.06);
+  border-top-color: var(--accent);
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────── */
+@media (max-width: 420px) {
+  .top-inner {
+    padding: 0.5rem;
+  }
+  .logo {
+    width: 34px;
+    height: 34px;
+  }
+}

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=980" />
+  <title>Ibot — Logs Watch</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    /* Estilos específicos de Logs */
+    .table-container { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .log-time { color: var(--accent); font-weight: 600; white-space: nowrap; }
+    .log-group { font-weight: 700; color: #fff; }
+    .log-push { color: var(--muted); font-size: 13px; }
+    .log-text { color: #eee; line-height: 1.4; }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .page-info {
+      display: flex;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">IB</div>
+        <div>
+          <div style="font-weight: 800">Ibot</div>
+          <div style="font-size: 12px; color: var(--muted)">Logs Watch</div>
+        </div>
+      </div>
+      <nav class="top-links">
+        <a href="/">🏠 Home</a>
+        <a href="/config.html">⚙️ Ajustes</a>
+        <a href="/logs.html" class="active">📜 Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="panel">
+        <div class="header-row">
+          <div class="title">Mensajes Recientes (Watch Mode)</div>
+          <button id="btn-refresh" class="btn">Actualizar</button>
+        </div>
+
+        <div class="table-container">
+          <table id="logs-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Grupo</th>
+                <th>Usuario</th>
+                <th>Mensaje</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body">
+              <tr>
+                <td colspan="4" style="text-align: center; padding: 20px; color: var(--muted)">
+                  Cargando logs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <button id="prev-page" class="btn" disabled>Anterior</button>
+          <div class="page-info">
+            Página <span id="page-num" style="margin: 0 4px; color: #fff">1</span>
+          </div>
+          <button id="next-page" class="btn">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/utils.js"></script>
+  <script>
+    const logsBody = $('#logs-body');
+    const btnRefresh = $('#btn-refresh');
+    const btnPrev = $('#prev-page');
+    const btnNext = $('#next-page');
+    const pageNumEl = $('#page-num');
+
+    let currentPage = 1;
+    const limit = 50;
+
+    async function loadLogs(page = 1) {
+      logsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--muted)">Cargando...</td></tr>';
+
+      try {
+        const skip = (page - 1) * limit;
+        const res = await fetch(`/api/logs?limit=${limit}&skip=${skip}`);
+        if (!res.ok) throw new Error('Error loading logs');
+
+        const logs = await res.json();
+        renderLogs(logs);
+
+        currentPage = page;
+        pageNumEl.textContent = currentPage;
+        btnPrev.disabled = currentPage <= 1;
+        btnNext.disabled = logs.length < limit;
+      } catch (err) {
+        console.error(err);
+        logsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--danger)">Error al cargar logs</td></tr>';
+      }
+    }
+
+    function renderLogs(logs) {
+      if (!logs || logs.length === 0) {
+        logsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--muted)">No hay logs disponibles</td></tr>';
+        return;
+      }
+
+      logsBody.innerHTML = logs.map((log) => {
+        const date = new Date(log.messageTimestamp * 1000);
+        const timeStr = date.toLocaleString();
+
+        let participant = log.pushName || log.participant || '???';
+        if (participant.includes('@')) participant = participant.split('@')[0];
+
+        const groupName = log.groupName || log.groupId || 'Grupo Desconocido';
+
+        return `
+          <tr>
+            <td class="log-time">${timeStr}</td>
+            <td>
+              <div class="log-group">${escapeHtml(groupName)}</div>
+              <div style="font-size: 11px; color: var(--muted)">${log.groupId}</div>
+            </td>
+            <td>
+              <div style="font-weight: 600">${escapeHtml(participant)}</div>
+              <div class="log-push">${escapeHtml(log.pushName)}</div>
+            </td>
+            <td class="log-text">${escapeHtml(log.text)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    btnRefresh.addEventListener('click', () => loadLogs(1));
+    btnPrev.addEventListener('click', () => { if (currentPage > 1) loadLogs(currentPage - 1); });
+    btnNext.addEventListener('click', () => loadLogs(currentPage + 1));
+
+    // Carga inicial
+    loadLogs();
+  </script>
+</body>
+</html>

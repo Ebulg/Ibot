@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Panel Ibot — Home</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    /* Estilos específicos de Home */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+      align-items: start;
+    }
+
+    .status-box {
+      background: linear-gradient(180deg, var(--glass), rgba(255, 255, 255, 0.015));
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .big-row {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .big-row .left {
+      flex: 1;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .estado-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+      transition: var(--transition);
+    }
+
+    .estado-title {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .estado-text {
+      font-weight: 900;
+      font-size: 1.05rem;
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qr-wrap img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .processing {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 880px) {
+      .big-row { flex-direction: row; }
+      .btn { padding: 12px; font-size: 15px; }
+      .qr-wrap img { width: min(72vw, 320px); height: auto; }
+    }
+
+    @media (max-width: 420px) {
+      .estado-text { font-size: 1rem; }
+      .qr-wrap img { width: 64vw; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">IB</div>
+        <div>
+          <div style="font-weight: 800">Ibot</div>
+          <div style="font-size: 12px; color: var(--muted)">Panel de control</div>
+        </div>
+      </div>
+      <nav class="top-links">
+        <a href="/" class="active">🏠 Home</a>
+        <a href="/config.html">⚙️ Ajustes</a>
+        <a href="/logs.html">📜 Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px">
+          <h1 style="margin: 0; font-size: 1.05rem">Panel de control del Bot</h1>
+          <div style="color: var(--muted); font-size: 13px">Conectado al backend</div>
+        </div>
+
+        <div class="grid">
+          <div class="status-box">
+            <!-- Estado del bot -->
+            <div class="big-row">
+              <div class="left">
+                <div id="estadoDot" class="estado-dot" style="background: var(--danger)"></div>
+                <div style="margin-left: 8px">
+                  <div class="estado-title">Estado del bot</div>
+                  <div id="estadoText" class="estado-text">Desconocido</div>
+                </div>
+              </div>
+              <div>
+                <div id="estadoPill" class="pill off">APAGADO</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 6px">
+              <button id="btn-toggle-bot" class="btn full">Encender Bot</button>
+            </div>
+
+            <!-- Respuestas automáticas -->
+            <div style="margin-top: 8px">
+              <div style="font-size: 12px; color: var(--muted); font-weight: 700">Respuestas automáticas</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px">
+                <div id="respPill" class="pill off">DESACTIVAS</div>
+                <div style="margin-left: auto; text-align: right">
+                  <div style="font-size: 12px; color: var(--muted)">Mensajes</div>
+                  <div id="msg-count" style="font-weight: 900">0</div>
+                </div>
+              </div>
+            </div> 
+
+            <div style="margin-top: 8px">
+              <button id="btn-toggle-resp" class="btn secondary full">Activar respuestas</button>
+            </div>
+
+            <!-- QR -->
+            <div id="qr-container" class="qr-wrap" style="display: none"></div>
+
+            <div id="processingNote" class="processing" style="display: none; margin-top: 8px">
+              <div class="spinner" aria-hidden></div>
+              <div>Procesando inicio de sesión... espera unos segundos</div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--muted); margin-top: 8px">
+              Escanea el QR con WhatsApp para iniciar sesión.
+              La página mostrará el progreso y el estado en tiempo real.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Hecho con ❤️ — Ibot Panel</footer>
+
+  <script src="/js/utils.js"></script>
+  <script>
+    const estadoDot = document.getElementById('estadoDot');
+    const estadoText = document.getElementById('estadoText');
+    const estadoPill = document.getElementById('estadoPill');
+    const respPill = document.getElementById('respPill');
+    const btnToggleBot = document.getElementById('btn-toggle-bot');
+    const btnToggleResp = document.getElementById('btn-toggle-resp');
+    const msgCount = document.getElementById('msg-count');
+    const qrContainer = document.getElementById('qr-container');
+    const processingNote = document.getElementById('processingNote');
+
+    let polling = null;
+
+    async function fetchEstado() {
+      try {
+        const res = await fetch('/toggle-cargar');
+        if (!res.ok) throw new Error('error');
+
+        const data = await res.json();
+        const isOn = !!data.estado;
+        const permiso = !!data.permiso;
+        const orders = data.msjAnswer ?? 0;
+        const qr = data.qr ?? null;
+        const estadoTextServer = data.estadoText ?? null;
+
+        // Actualizar UI
+        estadoDot.style.background = isOn ? 'var(--success)' : 'var(--danger)';
+        estadoText.textContent = isOn ? 'En línea' : 'Apagado';
+        setPill(estadoPill, isOn, { on: 'ENCENDIDO', off: 'APAGADO' });
+        setPill(respPill, permiso, { on: 'ACTIVAS', off: 'DESACTIVAS' });
+        msgCount.textContent = orders;
+
+        // QR y procesamiento
+        processingNote.style.display = 'none';
+        qrContainer.innerHTML = '';
+        qrContainer.style.display = 'none';
+
+        if (estadoTextServer === 'qr_generado' && qr) {
+          qrContainer.style.display = 'flex';
+          const img = create('img', { src: qr, alt: 'QR' });
+          qrContainer.appendChild(img);
+          const hint = create('div', {
+            style: 'font-size: 12px; color: var(--muted)',
+            textContent: 'Escanea el QR con WhatsApp',
+          });
+          qrContainer.appendChild(hint);
+        } else if (estadoTextServer === 'procesando') {
+          processingNote.style.display = 'flex';
+        }
+
+        btnToggleBot.textContent = isOn ? 'Apagar Bot' : 'Encender Bot';
+        btnToggleResp.textContent = permiso ? 'Desactivar respuestas' : 'Activar respuestas';
+        btnToggleResp.classList.remove('resp-on', 'resp-off');
+        btnToggleResp.classList.add(permiso ? 'resp-on' : 'resp-off');
+      } catch (e) {
+        console.error('fetchEstado:', e);
+        estadoDot.style.background = 'var(--danger)';
+        estadoText.textContent = 'Desconocido';
+        setPill(estadoPill, false, { on: 'ENCENDIDO', off: 'APAGADO' });
+        setPill(respPill, false, { on: 'ACTIVAS', off: 'DESACTIVAS' });
+        msgCount.textContent = '0';
+        processingNote.style.display = 'none';
+        qrContainer.innerHTML = '';
+        qrContainer.style.display = 'none';
+      }
+    }
+
+    btnToggleBot.addEventListener('click', async () => {
+      btnToggleBot.disabled = true;
+      const prevText = btnToggleBot.textContent;
+      btnToggleBot.textContent = 'Procesando...';
+      try {
+        const r = await fetch('/toggle-bot', { method: 'POST' });
+        if (!r.ok) throw new Error('err');
+        await fetchEstado();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        btnToggleBot.disabled = false;
+        btnToggleBot.textContent = prevText;
+      }
+    });
+
+    btnToggleResp.addEventListener('click', async () => {
+      btnToggleResp.disabled = true;
+      const prevText = btnToggleResp.textContent;
+      try {
+        const r = await fetch('/toggle-respuesta', { method: 'POST' });
+        if (!r.ok) throw new Error('err');
+        await fetchEstado();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        btnToggleResp.disabled = false;
+        btnToggleResp.textContent = prevText;
+      }
+    });
+
+    // Polling
+    fetchEstado();
+    if (polling) clearInterval(polling);
+    polling = setInterval(fetchEstado, 4500);
+    window.addEventListener('beforeunload', () => { if (polling) clearInterval(polling); });
+  </script>
+</body>
+</html>
