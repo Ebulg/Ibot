@@ -1,3 +1,9 @@
 node_modules/
-auth/
 .env
+.pnpm-store/
+storage/accounts/*/auth/
+storage/accounts/*/logs/*.jsonl
+storage/accounts/*/chats/*.jsonl
+storage/accounts/*/chats/groups.json
+*.log
+.DS_Store

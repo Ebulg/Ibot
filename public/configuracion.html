@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ibot — Configuración</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    /* Estilos específicos de Configuración */
+    :root {
+      --container-max: 1000px;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .config-grid > .full {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 900px) {
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+      .config-grid > .full {
+        grid-column: span 1;
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 15px;
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    @media (max-width: 768px) {
+      .span-3, .span-4, .span-6, .span-8 {
+        grid-column: span 12;
+      }
+    }
+
+    /* Brillo y contraste mejorado de inputs */
+    input, select, textarea {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      font-size: 14px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.25) !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    /* Switch fields */
+    .switch-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .switch-field:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .switch-field input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent);
+      margin: 0;
+    }
+
+    /* Separadores y secciones */
+    .section-separator {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+      margin: 16px 0;
+      border: none;
+    }
+
+    .section-title-tag {
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* Títulos de sección coloreados */
+    .title-modo { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
+    .title-normal { color: #ffb400; text-shadow: 0 0 8px rgba(255, 180, 0, 0.2); }
+    .title-ia { color: #39ff6a; text-shadow: 0 0 8px rgba(57, 255, 106, 0.2); }
+
+    /* Custom select dropdown styling */
+    select option {
+      background-color: #111322 !important;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">IB</div>
+        <div>
+          <div style="font-weight: 800; font-size: 15px; line-height: 1.1;">Ibot</div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.1;">Panel de Control</div>
+        </div>
+      </div>
+      <nav class="top-links">
+        <a href="/" title="Inicio">🏠</a>
+        <a href="/grupos.html" title="Grupos">👥</a>
+        <a href="/configuracion.html" class="active" title="Configuración">⚙️</a>
+        <a href="/logs.html" title="Logs">📜</a>
+        <button id="panelLogoutBtn" class="linklike" type="button" title="Salir" style="filter: drop-shadow(0 0 2px rgba(255,23,68,0.85));">🚪</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="noAccounts" class="panel" style="display:none; border: 1px solid rgba(255, 23, 68, 0.3); background: rgba(255, 23, 68, 0.02);">
+        <div class="title" style="color: var(--danger);">No hay cuentas configuradas</div>
+        <div class="small" style="margin-top: 5px;">Por favor, crea una cuenta de WhatsApp en la pantalla principal antes de ajustar la configuración.</div>
+      </div>
+
+      <div id="configContent" class="config-grid">
+        
+        <!-- CARD 1: MODO DEL BOT -->
+        <section class="panel" style="border: 1px solid rgba(0, 229, 255, 0.2); background: rgba(0, 229, 255, 0.015); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="header-row" style="border-bottom-color: rgba(0, 229, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px;">
+              <div>
+                <div class="title title-modo">Modo del bot</div>
+                <div class="small">Elige el comportamiento principal del bot runtime.</div>
+              </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <label class="field">
+                Modo de Operación
+                <select id="modo">
+                  <option value="normal">Normal (Respuestas)</option>
+                  <option value="watch">Watch (Monitoreo)</option>
+                  <option value="ia">IA (Inteligencia Artificial)</option>
+                </select>
+              </label>
+              
+              <div style="font-size: 13px; color: var(--muted); line-height: 1.4; background: rgba(255,255,255,0.01); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">
+                • <strong>Normal</strong>: Responde a grupos según reglas estándar.<br>
+                • <strong>Watch</strong>: Solo monitorea y guarda logs de mensajes.<br>
+                • <strong>IA</strong>: Utiliza Z.AI para responder de forma inteligente.
+              </div>
+            </div>
+          </div>
+          
+          <button id="saveMain" class="btn full" type="button" style="margin-top: 24px; font-weight: 800; background: linear-gradient(135deg, var(--accent) 0%, #0088ff 100%); color: #000; box-shadow: 0 0 12px var(--accent-glow); border: none; border-radius: 10px;">
+            Guardar Modo
+          </button>
+        </section>
+
+        <!-- CARD 2: MODO NORMAL RÁPIDO -->
+        <section class="panel" style="border: 1px solid rgba(255, 180, 0, 0.2); background: rgba(255, 180, 0, 0.015); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="header-row" style="border-bottom-color: rgba(255, 180, 0, 0.1); padding-bottom: 12px; margin-bottom: 16px;">
+              <div>
+                <div class="title title-normal">Modo normal rápido</div>
+                <div class="small">Límites y filtros aplicables a la lógica estándar.</div>
+              </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <label class="field">
+                Límite global de respuestas (0 = infinito)
+                <input id="globalLimit" type="number" min="0" placeholder="Ej: 3">
+              </label>
+              
+              <div style="margin-top: 4px;">
+                <label class="switch-field">
+                  <input type="checkbox" id="filterEnabled"> Filtro de palabras activo
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div style="font-size: 12.5px; color: var(--muted); margin-top: 24px; line-height: 1.4;">
+            * Estos ajustes controlan la lógica normal rápida sin interferir con el funcionamiento de los grupos independientes.
+          </div>
+        </section>
+
+        <!-- CARD 3: MODO IA (COMPLETO Y REDISEÑADO) -->
+        <section class="panel full" style="border: 1px solid rgba(57, 255, 106, 0.2); background: rgba(57, 255, 106, 0.015); margin-top: 8px;">
+          <div class="header-row" style="border-bottom-color: rgba(57, 255, 106, 0.1); padding-bottom: 12px; margin-bottom: 16px;">
+            <div>
+              <div class="title title-ia">Configuración de Inteligencia Artificial (Z.AI)</div>
+              <div class="small">Controla la integración del modelo de lenguaje IA, personalidad del bot, cooldowns e instrucciones del sistema.</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Sub-sección A: Conexión -->
+            <div class="span-12">
+              <div class="section-title-tag" style="color: #39ff6a;">🔌 Conexión y Modelo</div>
+            </div>
+
+            <label class="field span-4">
+              Activar IA
+              <select id="iaEnabled">
+                <option value="false">No (Desactivado)</option>
+                <option value="true">Sí (Activado)</option>
+              </select>
+            </label>
+            
+            <label class="field span-4">
+              Modelo LLM
+              <input id="iaModel" placeholder="glm-5.1">
+            </label>
+            
+            <label class="field span-4">
+              Base URL de API
+              <input id="iaBaseUrl" placeholder="https://api.z.ai/api/paas/v4">
+            </label>
+            
+            <label class="field span-12">
+              API Key (Contraseña de API)
+              <input id="iaApiKey" type="password" placeholder="•••••••• (Dejar vacío para conservar)">
+            </label>
+
+            <!-- Separador -->
+            <div class="span-12"><hr class="section-separator" /></div>
+
+            <!-- Sub-sección B: Parámetros -->
+            <div class="span-12">
+              <div class="section-title-tag" style="color: #ffb400;">📊 Parámetros del Modelo</div>
+            </div>
+
+            <label class="field span-4">
+              Temperatura (Creatividad)
+              <input id="iaTemperature" type="number" step="0.1" min="0" max="2" placeholder="0.6">
+            </label>
+            
+            <label class="field span-4">
+              Max Tokens (Largo respuesta)
+              <input id="iaMaxTokens" type="number" min="50" placeholder="500">
+            </label>
+            
+            <label class="field span-4">
+              Cooldown por grupo (ms)
+              <input id="iaCooldown" type="number" min="0" placeholder="3000">
+            </label>
+
+            <!-- Separador -->
+            <div class="span-12"><hr class="section-separator" /></div>
+
+            <!-- Sub-sección C: Disparadores y Filtros -->
+            <div class="span-12">
+              <div class="section-title-tag" style="color: var(--accent);">🛠️ Disparadores y Filtros</div>
+            </div>
+
+            <label class="field span-4">
+              Modo Comando
+              <select id="iaCommandMode">
+                <option value="required">Requiere comando</option>
+                <option value="all">Responder a todo</option>
+                <option value="optional">Comando opcional</option>
+              </select>
+            </label>
+            
+            <label class="field span-8">
+              Comandos disparadores (separados por coma)
+              <input id="iaCommands" placeholder="/chat,/gpt">
+            </label>
+
+            <div class="span-12" style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px;">
+              <label class="switch-field" style="flex: 1; min-width: 240px;">
+                <input type="checkbox" id="iaOnlyConfigured"> Responder solo en grupos configurados
+              </label>
+              <label class="switch-field" style="flex: 1; min-width: 240px;">
+                <input type="checkbox" id="iaIgnoreMedia"> Ignorar multimedia sin texto
+              </label>
+            </div>
+
+            <!-- Separador -->
+            <div class="span-12"><hr class="section-separator" /></div>
+
+            <!-- Sub-sección D: Prompting -->
+            <div class="span-12">
+              <div class="section-title-tag" style="color: #fff;">📝 Instrucciones de Comportamiento</div>
+            </div>
+
+            <label class="field span-12">
+              Prompt del Sistema (Definición de personalidad del bot)
+              <textarea id="iaSystemPrompt" placeholder="Actúa como un asistente virtual..." style="min-height: 120px; resize: vertical;"></textarea>
+            </label>
+            
+            <label class="field span-12">
+              Mensaje Fallback (Texto alternativo si falla la API)
+              <textarea id="iaFallback" placeholder="Lo siento, en este momento el bot de IA no está disponible..." style="min-height: 60px; resize: vertical;"></textarea>
+            </label>
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 24px; display: flex; justify-content: flex-end;">
+            <button id="saveAll" class="btn" type="button" style="padding: 10px 32px; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #39ff6a 0%, #00c850 100%); color: #000; box-shadow: 0 0 15px rgba(57,255,106,0.3); border: none;">
+              Guardar Configuración Completa
+            </button>
+          </div>
+        </section>
+
+        <!-- CARD 4: NOTIFICACIÓN DE CONEXIÓN -->
+        <section class="panel full" style="border: 1px solid rgba(0, 229, 255, 0.2); background: rgba(0, 229, 255, 0.015); margin-top: 8px;">
+          <div class="header-row" style="border-bottom-color: rgba(0, 229, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px;">
+            <div>
+              <div class="title" style="color: var(--accent); text-shadow: 0 0 8px var(--accent-glow);">Notificación de Conexión</div>
+              <div class="small">Envía un mensaje automático al grupo seleccionado cada vez que el bot inicie sesión o se reconecte.</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="span-12" style="margin-top: 4px;">
+              <label class="switch-field">
+                <input type="checkbox" id="connNotifyEnabled"> Activar notificación al conectar
+              </label>
+            </div>
+
+            <label class="field span-12" style="margin-top: 8px;">
+              Grupo Destinatario (Solo grupos configurados)
+              <select id="connNotifyGroup">
+                <option value="">Selecciona un grupo...</option>
+              </select>
+            </label>
+
+            <label class="field span-12" style="margin-top: 8px;">
+              Mensaje a Enviar
+              <textarea id="connNotifyMessage" placeholder="Ej: ¡Bot online y listo!" style="min-height: 80px; resize: vertical;"></textarea>
+            </label>
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 24px; display: flex; justify-content: flex-end;">
+            <button id="saveConnNotify" class="btn" type="button" style="padding: 10px 32px; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, var(--accent) 0%, #0088ff 100%); color: #000; box-shadow: 0 0 15px var(--accent-glow); border: none;">
+              Guardar Notificación
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="/js/api.js"></script>
+  <script src="/js/configuracion.js"></script>
+</body>
+</html>

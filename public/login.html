@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ibot — Iniciar sesión</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-form-side">
+      <div class="auth-form-header">
+        <div class="logo-container">
+          <div class="logo">IB</div>
+        </div>
+        <h2>Bienvenido de nuevo</h2>
+        <p class="small">Introduce tus credenciales para acceder de forma segura a tu bot.</p>
+      </div>
+      <form id="loginForm">
+        <label class="field">
+          Usuario
+          <input id="username" autocomplete="username" placeholder="Ingresa tu usuario" required />
+        </label>
+        <label class="field">
+          Contraseña
+          <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+        </label>
+        <button id="loginBtn" class="btn full" type="submit">Iniciar Sesión</button>
+        <div id="authMsg" class="auth-msg"></div>
+      </form>
+      <div class="auth-footer">
+        ¿No tienes un usuario en este panel? <a href="/register.html">Regístrate aquí</a>
+      </div>
+    </div>
+  </div>
+  <script src="/js/auth.js"></script>
+  <script>initLogin();</script>
+</body>
+</html>

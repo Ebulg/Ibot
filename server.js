@@ -1,71 +1,84 @@
-// server.js — Punto de entrada del servidor
+process.env.UV_THREADPOOL_SIZE = '64';
 import 'dotenv/config';
 import express from 'express';
-import { connectDB } from './src/db.js';
-import { iniciarBot, apagar, groupMessages } from './src/bot/index.js';
-import { createApiRouter } from './src/routes/api.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { connectDB, closeDB, getCollections, ensureIndexes } from './src/db/mongo.js';
+import { RuntimeRegistry } from './src/core/runtime-registry.js';
+import { createMainRouter } from './src/routes/main.routes.js';
+import { createAuthRouter, requirePanelAuth } from './src/routes/auth.middleware.js';
+import rateLimit from 'express-rate-limit';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const port = Number(process.env.PORT || 4310);
+const publicDir = path.join(__dirname, 'public');
 
 const app = express();
-const port = process.env.PORT || 4310;
+app.disable('x-powered-by');
 
-app.use(express.static('public'));
-app.use(express.json());
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { error: 'Demasiadas peticiones, por favor intenta más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// ─── Conexión a BD ──────────────────────────────────────
+app.use('/api/', apiLimiter);
+
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 const db = await connectDB();
-const configColl = db.collection('config');
-const gruposColl = db.collection('grupos');
-const logsColl = db.collection('logs');
-const countersColl = db.collection('counters');
-const qrColl = db.collection('qr_history');
+await ensureIndexes(db);
+const collections = getCollections(db);
+const registry = new RuntimeRegistry({ collections });
 
-const DOC_ID = '6845a8c734160e0e48e49362';
+app.use('/css', express.static(path.join(publicDir, 'css')));
+app.get('/js/auth.js', (req, res) => res.sendFile(path.join(publicDir, 'js', 'auth.js')));
+app.use(createAuthRouter({ collections }));
+app.get('/login.html', (req, res) => res.sendFile(path.join(publicDir, 'login.html')));
+app.get('/register.html', (req, res) => res.sendFile(path.join(publicDir, 'register.html')));
 
-// Asegurar documento config
-await configColl.updateOne(
-  { id: DOC_ID },
-  { $setOnInsert: { id: DOC_ID, activo: false, respuestas: false, estado: 'inicial' } },
-  { upsert: true },
-);
+app.use(requirePanelAuth({ collections }));
+app.use(express.static(publicDir, { extensions: ['html'] }));
+app.use(createMainRouter({ collections, registry }));
 
-// Estado inicial consistente
-await configColl.updateOne(
-  { id: DOC_ID },
-  { $set: { activo: false, respuestas: false, qr: null } },
-);
+app.get('/*splat', (req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
 
-// ─── Toggle Bot ─────────────────────────────────────────
-app.post('/toggle-bot', async (req, res) => {
-  try {
-    const estadoActual = await configColl.findOne({ id: DOC_ID });
-    if (!estadoActual) return res.status(500).json({ error: 'config no encontrada' });
-
-    if (!estadoActual.activo) {
-      await iniciarBot();
-    } else {
-      await apagar();
-    }
-
-    await configColl.updateOne({ id: DOC_ID }, { $set: { activo: !estadoActual.activo } });
-    res.json({ estado: !estadoActual.activo });
-  } catch (err) {
-    console.error('toggle-bot error:', err);
-    res.status(500).json({ error: err.message || 'error interno' });
+const server = app.listen(port, async () => {
+  console.log(`Ibot v2 listo en http://localhost:${port}`);
+  console.log(`Base MongoDB: ${process.env.MONGODB_DB || 'Ibotv2'} | Multicuenta sin cuenta forzada por defecto`);
+  
+  const accountsToStart = await collections.configs.find({ activo: true }).toArray();
+  for (const config of accountsToStart) {
+    console.log(`[Auto-start] Iniciando cuenta: ${config.accountId}`);
+    registry.start(config.accountId).catch(err => {
+        console.error(`Error auto-arrancando ${config.accountId}:`, err.message);
+    });
   }
 });
 
-// ─── Mensajes en memoria ────────────────────────────────
-app.get('/group-messages', (req, res) => {
-  res.json(groupMessages);
-});
+async function shutdown(signal) {
+  console.log(`Recibido ${signal}. Cerrando Ibot v2...`);
+  server.close(async () => {
+    await registry.stopAll('server_shutdown');
+    await closeDB();
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000).unref();
+}
 
-// ─── Montar rutas de API ────────────────────────────────
-const apiRouter = createApiRouter({
-  configColl, gruposColl, logsColl, countersColl, qrColl, DOC_ID,
-});
-app.use(apiRouter);
-
-// ─── Arranque ───────────────────────────────────────────
-app.listen(port, () => {
-  console.log(`🌐 Servidor corriendo en http://localhost:${port}`);
-});
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('unhandledRejection', (err) => console.error('Unhandled rejection:', err));
+process.on('uncaughtException', (err) => console.error('Uncaught exception:', err));

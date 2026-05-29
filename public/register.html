@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ibot — Registro</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-form-side">
+      <div class="auth-form-header">
+        <div class="logo-container">
+          <div class="logo">IB</div>
+        </div>
+        <h2>Crear usuario</h2>
+        <p class="small">Registra una credencial de administrador para acceder a tu bot.</p>
+      </div>
+      <form id="registerForm">
+        <label class="field">
+          Usuario
+          <input id="username" autocomplete="username" placeholder="Elige tu usuario (ej. admin)" required />
+        </label>
+        <label class="field">
+          Contraseña
+          <input id="password" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" minlength="8" required />
+        </label>
+        <label class="field">
+          Confirmar contraseña
+          <input id="confirm" type="password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="8" required />
+        </label>
+        <button id="registerBtn" class="btn full" type="submit">Crear usuario</button>
+        <div id="authMsg" class="auth-msg"></div>
+      </form>
+      <div class="auth-footer">
+        ¿Ya tienes un usuario en el panel? <a href="/login.html">Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+  <script src="/js/auth.js"></script>
+  <script>initRegister();</script>
+</body>
+</html>
